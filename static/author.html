@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Document</title>
+  <link rel="stylesheet" href="/static/css/bootstrap.css">
+  <style media="screen">
+    .table {
+      border: 0px;
+    }
+
+    .modal-title {
+      text-align: center;
+    }
+
+    .modal-body {
+      text-align: center;
+    }
+
+    .modal-footer {
+      text-align: center;
+    }
+    .body-text {
+      width: 41.75rem;
+      height: 3.25rem;
+      padding-left: 0.625rem;
+    }
+  </style>
+
+</head>
+<body>
+<table class="table table-hover" border="1">
+    <tr>
+        <th width="50">编号</th>
+        <th width="100">姓名&nbsp;&nbsp;<a data-toggle="modal" data-target="#add_modal">添加</a></th>
+        <th width="100">编辑</th>
+    </tr>
+    <tbody id="author_list"></tbody>
+    <script id="author_template" type="text/html">
+        {{ each alist as author }}
+        <tr>
+            <td>{{ author.id }}</td>
+            <td>{{ author.name }}</td>
+            <td>
+                <a href="javascript:edit({{ author.id }});">修改</a>
+                &nbsp;&nbsp;
+                <a href="javascript:del({{ author.id }});">删除</a>
+            </td>
+        </tr>
+        {{ /each }}
+    </script>
+</table>
+<!-- 添加modal -->
+<div class="modal fade" id="add_modal" tabindex="-1" role="dialog" aria-labelledby="" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+        <h4 class="modal-title" id="add_modal" style="text-align:center">添加作者</h4>
+      </div>
+      <div class="modal-body">
+        <input id="add-name" class="body-text" type="text" name="author_name" placeholder="请输入作者姓名">
+      </div>
+      <div class="modal-footer">
+        <button id="add" type="button" class="btn btn-primary" data-dismiss="modal">添加</button>
+        <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- 修改modal -->
+<div class="modal fade" id="update_modal" tabindex="-1" role="dialog" aria-labelledby="" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+        <h4 class="modal-title" id="update_modal">修改姓名</h4>
+      </div>
+      <div class="modal-body">
+        <input id="update-name" class="body-text" type="text" name="author_name" placeholder="请输入作者姓名">
+      </div>
+      <div class="modal-footer">
+        <button id="update" type="button" class="btn btn-primary" data-dismiss="modal">修改</button>
+        <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="modal fade" id="delete_modal" tabindex="-1" role="dialog" aria-labelledby="" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+        <h4 class="modal-title" id="delete_modal">确定要删除吗？</h4>
+      </div>
+      <div class="modal-body">
+        <button id="delete" type="button" class="btn btn-primary" data-dismiss="modal">删除</button>
+        <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+      </div>
+
+    </div>
+  </div>
+</div>
+</html>
+<script src="/static/js/jquery.min.js" charset="utf-9"></script>
+<script src="/static/js/bootstrap.min.js" charset="utf-8"></script>
+<script src="/static/js/template.js" charset="utf-8"></script>
+<script type="text/javascript">
+
+  load();
+
+  function load() {
+    $.get('/api/v1/author', function (data) {
+        var alist = data.alist;
+        var author_html = template('author_template', {alist: alist});
+        $('#author_list').html(author_html);
+    })
+  };
+
+  function edit(author_id) {
+    $.get("/api/v1/author/" + author_id, function(data){
+      var author = data.author;
+      $("#update-name").val(author.name);
+    })
+    $("#update_modal").modal("show")
+    console.log($("#update-name").val());
+    $("#update").click(function(event) {
+      /* Act on the event */
+      $.ajax({
+        url: '/api/v1/author/' + author_id ,
+        type: 'PUT',
+        dataType: 'json',
+        data: {name: $("#update-name").val()}
+      })
+
+      .success(function(data) {
+        if (data.msg=="ok"){
+          load();
+        }
+      });
+
+    });
+  }
+
+  function del (author_id) {
+    $("#delete_modal").modal("show")
+    $("#delete").click(function(event) {
+      /* Act on the event */
+      $.ajax({
+        url: '/api/v1/author/' + author_id ,
+        type: 'DELETE',
+      })
+
+      .success(function(data) {
+        if (data.msg=="ok"){
+          load();
+        }
+      });
+
+    });
+
+  };
+  
+  $("#add").click(function(event) {
+    $.post('/api/v1/author', {"author_name":$("#add-name").val()}, function(data) {
+      /*optional stuff to do after success */
+      if (data.msg=="ok"){
+        load();
+        $("#add-name").val("");
+      }
+
+    });
+  });
+  $("#delete").click(function(event) {
+    /* Act on the event */
+    ;
+  });
+
+
+</script>
