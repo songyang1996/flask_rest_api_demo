@@ -7,6 +7,8 @@
 #### 启动命令python test.py runserver
 #### 入口地址 localhost:5000/static/author.html
 #### 下个版本尝试更新react版
+
+### API示例
 #### /author
 ####   "GET"  查询全部
 ####   "POST"  添加一个新的作者信息
